@@ -532,20 +532,36 @@ canvas { display: block; }
 .order-card select option { background: #111; }
 .list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
 @media (max-width: 900px) {
+  html, body {
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+  }
   body[data-page] { height: 100%; overflow: hidden; }
-  .app { grid-template-columns: 1fr; grid-template-rows: 1fr auto; height: 100dvh; min-height: 100dvh; overflow: hidden; }
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
   .side {
     order: 2;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: space-between;
-    overflow-x: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     border-right: 0;
     border-top: 1px solid var(--line);
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-    position: relative;
-    z-index: 5;
-    background: var(--bg-2);
+    padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background: #070705;
     gap: 2px;
   }
   .side .mark, .side-foot, .brand { display: none; }
@@ -553,7 +569,7 @@ canvas { display: block; }
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 4px 2px 14px;
+    padding: calc(4px + env(safe-area-inset-top, 0px)) 2px 14px;
     position: sticky;
     top: 0;
     z-index: 4;
@@ -561,20 +577,25 @@ canvas { display: block; }
   }
   .phone-bar .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
   .side a {
-    flex: 1 1 14%;
+    flex: 1 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
     white-space: nowrap;
     font-size: 11px;
-    padding: 9px 2px;
-    min-width: 0;
+    padding: 10px 8px;
+    min-width: 44px;
   }
   .nav-full { display: none; }
   .nav-short { display: inline; }
   .nav-desk { display: none !important; }
   .side a.nav-more { display: flex !important; }
-  .main { order: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 16px 36px; }
+  .main {
+    order: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 16px calc(96px + env(safe-area-inset-bottom, 0px));
+  }
   .desk-hero { align-items: flex-start; }
   .desk-hero .brand-mark { width: 64px; height: 64px; }
   .kpi { font-size: 36px; }

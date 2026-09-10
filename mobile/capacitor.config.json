@@ -29,7 +29,7 @@
     "allowMixedContent": true
   },
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "never",
     "preferredContentMode": "mobile",
     "scheme": "Cove"
   }

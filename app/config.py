@@ -10,7 +10,7 @@ load_dotenv(ROOT / ".env", override=True)
 
 APP_NAME = os.getenv("APP_NAME", "Alpaca Cove")
 COMPANY_NAME = os.getenv("COMPANY_NAME", "Evolution Freedom LTD")
-APP_VERSION = os.getenv("APP_VERSION", "1.0.4")
+APP_VERSION = os.getenv("APP_VERSION", "1.0.5")
 APP_SECRET = os.getenv("APP_SECRET", "dev-only-change-me")
 APP_URL = os.getenv("APP_URL", "http://127.0.0.1:8787").rstrip("/")
 PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", "https://www.evolutionfreedomltd.co.uk").rstrip("/")
