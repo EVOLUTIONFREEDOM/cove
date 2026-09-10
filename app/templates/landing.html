@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ app_name }} — iPhone and Android app</title>
+  <link rel="icon" href="/static/img/alpaca-cove-icon.png" />
+  <link rel="apple-touch-icon" href="/static/img/alpaca-cove-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}" />
+</head>
+<body>
+  <div class="landing">
+    <div class="topbar">
+      <div class="brand-inline">
+        <img class="brand-mark" src="/static/img/alpaca-cove-icon.png" alt="" />
+        <div class="mark">{{ app_name }}</div>
+      </div>
+      <nav class="legal-nav" style="margin:0">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/delete-account">Delete account</a>
+      </nav>
+    </div>
+    <div class="hero">
+      <img class="app-logo" src="/static/img/alpaca-cove-icon.png" alt="{{ app_name }}" />
+      <h1>An iPhone and Android desk for Alpaca.</h1>
+      <p class="lede">{{ app_name }} is a phone app for people who already have Alpaca. You look at balances, charts, options, and calendars in one place, then send the trade to Alpaca. We never hold your money. {{ company_name }} makes the software. Alpaca is the broker.</p>
+      <div id="stores" class="actions">
+        <span class="btn">App Store — coming</span>
+        <span class="btn">Google Play — coming</span>
+      </div>
+      <div id="app-entry" class="actions" hidden>
+        <a class="btn primary" href="/signup">Start {{ trial_days }}-day trial</a>
+        <a class="btn" href="/login">Sign in</a>
+      </div>
+    </div>
+
+    <h2 class="mark" style="margin:0 0 16px">Intro</h2>
+    <div class="intro-grid">
+      <div class="card">
+        <h3>Who it is for</h3>
+        <p>You already have an Alpaca account (paper or live). You want a simple phone desk instead of hopping between screens. If you do not have Alpaca, open an account with them first. Cove cannot hold cash for you.</p>
+      </div>
+      <div class="card">
+        <h3>What you do in the app</h3>
+        <p>Create a Cove login (email and password). Link your Alpaca keys in Account. Home shows equity and positions. Trade and Options send orders to Alpaca after you confirm. Watchlist, P&amp;L calendar, dividends, activity, and alerts are reports and reminders — they do not move money on their own.</p>
+      </div>
+      <div class="card">
+        <h3>What it is not</h3>
+        <p>Not a broker. Not a bank. Not tax or investment advice. Not affiliated with Alpaca Markets. Charts and option numbers can be late or wrong. Paper is practice. Live is real. Options can expire worthless.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <h3>How to start</h3>
+      <p>1. Install Alpaca Cove from Google Play or the App Store when it is listed.</p>
+      <p>2. Create your Cove login. New accounts get {{ trial_days }} days free.</p>
+      <p>3. In Account, paste your Alpaca key and secret (start with Paper if you want practice money).</p>
+      <p>4. Open Home. If it fills in, the link worked. Then trade only after you have read the order back.</p>
+      <p>After the trial: {{ price_label }} or {{ lifetime_label }} once, paid inside the store. Cancel there too. Upgrade lives in the app. Share opens the public website. Read me opens the terms page.</p>
+    </div>
+
+    <p class="fine">{{ company_name }} provides software only. Trades stay on Alpaca. Not investment advice. Contact <a href="mailto:evolutioninvestments79@gmail.com">evolutioninvestments79@gmail.com</a>. <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/delete-account">Delete account</a></p>
+  </div>
+  <script>
+    const native = !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== "web");
+    const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    if (native || local) {
+      document.getElementById("app-entry").hidden = false;
+      document.getElementById("stores").hidden = true;
+    }
+  </script>
+</body>
+</html>

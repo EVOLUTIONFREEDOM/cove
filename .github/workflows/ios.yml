@@ -1,0 +1,27 @@
+# Builds the Cove iPhone app on GitHub's Mac runners (no local Mac).
+# Add these repository secrets: APP_STORE_CONNECT_API_KEY, APP_STORE_CONNECT_KEY_ID,
+# APP_STORE_CONNECT_ISSUER_ID, BUILD_CERTIFICATE_BASE64, P12_PASSWORD,
+# BUILD_PROVISION_PROFILE_BASE64.
+name: iOS TestFlight
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ios:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Build unsigned archive note
+        run: |
+          echo "Signing secrets are required before this job can export an IPA."
+          echo "Use Codemagic (codemagic.yaml) if you do not want to manage certificates yourself."
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO build

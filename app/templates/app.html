@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{% if page == "readme" %}Read me{% elif page == "feedback" %}Feedback{% elif page == "calendar" %}P&amp;L calendar{% elif page == "upgrade" %}Upgrade{% elif page == "share" %}Share{% elif page == "more" %}More{% else %}{{ page|capitalize }}{% endif %} · {{ app_name }}</title>
+  <link rel="icon" href="/static/img/alpaca-cove-icon.png" />
+  <link rel="apple-touch-icon" href="/static/img/alpaca-cove-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}" />
+</head>
+<body data-page="{{ page }}">
+  <div class="app">
+    <nav class="side">
+      <div class="brand">
+        <img class="brand-mark" src="/static/img/alpaca-cove-icon.png" alt="" />
+        <div>
+          <div class="mark">{{ app_name }}</div>
+          <p class="mark-sub">Interface only. Trades stay on Alpaca.</p>
+        </div>
+      </div>
+      {% set extra_keys = ["account", "upgrade", "share", "feedback", "more"] %}
+      {% set terms_url = public_site_url.rstrip("/") + "/terms-and-conditions/" %}
+      {% set links = [
+        ("/home","Home","Home","home","","",""),
+        ("/trade","Trade","Trade","trade","","",""),
+        ("/watchlist","Watchlist","Watch","watchlist","","",""),
+        ("/options","Options","Opts","options","","",""),
+        ("/calendar","P&L calendar","P&L","calendar","","",""),
+        ("/dividends","Dividends","Divs","dividends","","",""),
+        ("/activity","Activity","Log","activity","","",""),
+        ("/alerts","Alerts","Alerts","alerts","","",""),
+        ("/more","More","More","more","nav-more","",""),
+        ("/account","Account","Acct","account","nav-desk","",""),
+        ("/upgrade","Upgrade","Pro","upgrade","nav-desk","",""),
+        ("/share","Share","Share","share","nav-desk","",""),
+        ("/feedback","Feedback","Ideas","feedback","nav-desk","",""),
+        (terms_url,"Read me","Help","readme","nav-desk","_blank","noopener"),
+      ] %}
+      {% for href, label, short, key, extra_class, target, rel in links %}
+        <a href="{{ href }}" class="{{ extra_class }} {{ 'active' if page == key or (key == 'more' and page in extra_keys) else '' }}"{% if target %} target="{{ target }}" rel="{{ rel }}"{% endif %}>
+          <span class="nav-full">{{ label }}</span>
+          <span class="nav-short">{{ short }}</span>
+          {% if key == "alerts" and unread %}<span class="badge">{{ unread }}</span>{% endif %}
+        </a>
+      {% endfor %}
+      <div class="side-foot">
+        {% if entitlement and entitlement.trial and not entitlement.subscribed %}
+          Trial · {{ entitlement.trial_days_left }}d left
+        {% elif entitlement and entitlement.subscribed %}
+          {{ app_name }} Pro
+        {% else %}
+          Trial ended
+        {% endif %}
+        <div>
+          {% if connection.linked %}
+            {{ "Paper" if connection.paper else "Live" }}
+            {% if connection.account_tail %}· {{ connection.account_tail }}{% endif %}
+          {% else %}
+            Alpaca not linked
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <main class="main">
+      <header class="phone-bar">
+        <img class="brand-mark" src="/static/img/alpaca-cove-icon.png" alt="" />
+        <div>
+          <div class="mark">{{ app_name }}</div>
+          <p class="phone-bar-sub">{% if connection.linked %}{{ "Paper" if connection.paper else "Live" }}{% else %}Desk for Alpaca{% endif %}</p>
+        </div>
+      </header>
+      {% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+      <div id="view"><p class="muted">Loading…</p></div>
+    </main>
+  </div>
+  <script src="/static/js/lightweight-charts.js"></script>
+  <script src="/static/js/app.js?v=1.0.8"></script>
+</body>
+</html>

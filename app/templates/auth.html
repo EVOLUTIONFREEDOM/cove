@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>
+    {% if mode == "login" %}Sign in
+    {% elif mode == "signup" %}Create account
+    {% elif mode == "forgot" %}Forgot password
+    {% else %}New password{% endif %}
+    · {{ app_name }}
+  </title>
+  <link rel="icon" href="/static/img/alpaca-cove-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card card">
+      <img class="brand-mark lg" src="/static/img/alpaca-cove-icon.png" alt="{{ app_name }}" style="margin:0 auto 12px" />
+      <div class="mark">{{ app_name }}</div>
+      <h1>
+        {% if mode == "login" %}Welcome back
+        {% elif mode == "signup" %}Start the free trial
+        {% elif mode == "forgot" %}Forgot password
+        {% else %}Choose a new password{% endif %}
+      </h1>
+      {% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+      {% if reset_link %}
+        <p class="muted">Open this link:</p>
+        <p><a href="{{ reset_link }}">{{ reset_link }}</a></p>
+      {% endif %}
+
+      {% if mode == "login" %}
+      <form method="post" action="/login">
+        <label>Email</label>
+        <input type="email" name="email" required autocomplete="email" />
+        <label>Password</label>
+        <input type="password" name="password" required minlength="8" autocomplete="current-password" />
+        <p><button class="btn primary" type="submit" style="margin-top:16px">Sign in</button></p>
+      </form>
+      <p class="muted"><a href="/forgot">Forgot password?</a></p>
+      <p class="muted">No account? <a href="/signup">Start trial</a></p>
+
+      {% elif mode == "signup" %}
+      <form method="post" action="/signup">
+        <label>Email</label>
+        <input type="email" name="email" required autocomplete="email" />
+        <label>Password</label>
+        <input type="password" name="password" required minlength="8" autocomplete="new-password" />
+        <p><button class="btn primary" type="submit" style="margin-top:16px">Create account</button></p>
+      </form>
+      <p class="muted">Already here? <a href="/login">Sign in</a>. {{ trial_days }} days free.</p>
+
+      {% elif mode == "forgot" %}
+      <p class="muted">Enter the email you use for Alpaca Cove. We will send a reset link. This does not change your Alpaca login.</p>
+      <form method="post" action="/forgot">
+        <label>Email</label>
+        <input type="email" name="email" required autocomplete="email" />
+        <p><button class="btn primary" type="submit" style="margin-top:16px">Send reset link</button></p>
+      </form>
+      <p class="muted"><a href="/login">Back to sign in</a></p>
+
+      {% else %}
+      <form method="post" action="/reset">
+        <input type="hidden" name="token" value="{{ token }}" />
+        <label>New password</label>
+        <input type="password" name="password" required minlength="8" autocomplete="new-password" />
+        <label>Type it again</label>
+        <input type="password" name="password2" required minlength="8" autocomplete="new-password" />
+        <p><button class="btn primary" type="submit" style="margin-top:16px">Save password and sign in</button></p>
+      </form>
+      <p class="muted"><a href="/login">Back to sign in</a></p>
+      {% endif %}
+
+      <p class="muted" style="margin-top:14px">{{ app_name }} is an iPhone and Android app for Alpaca users. Trades stay on Alpaca. We never hold your money.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,82 @@
+# Cove iPhone → TestFlight. Start this workflow from the Codemagic UI.
+# One-time Codemagic setup is in STORE.md (API key named "Cove" + CERTIFICATE_PRIVATE_KEY).
+
+workflows:
+  ios-testflight:
+    name: Cove iPhone (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Cove
+    environment:
+      groups:
+        - code-signing
+      vars:
+        BUNDLE_ID: com.cove.trade
+        XCODE_PROJECT: mobile/ios/App/App.xcodeproj
+        XCODE_SCHEME: App
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install JS deps
+        script: |
+          cd mobile
+          npm ci
+      - name: Sync Capacitor iOS
+        script: |
+          cd mobile
+          npx cap sync ios
+      - name: Set up keychain
+        script: keychain initialize
+      - name: Fetch or create signing files
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Add certificates to keychain
+        script: keychain add-certificates
+      - name: Apply signing to Xcode project
+        script: |
+          xcode-project use-profiles \
+            --custom-export-options='{"testFlightInternalTestingOnly": true}'
+      - name: Increment build number
+        script: |
+          cd "$CM_BUILD_DIR/mobile/ios/App"
+          LATEST=$(app-store-connect get-latest-testflight-build-number --bundle-id "$BUNDLE_ID" --platform IOS || true)
+          if [ -z "$LATEST" ] || [ "$LATEST" = "None" ]; then
+            LATEST=$(app-store-connect get-latest-app-store-build-number --bundle-id "$BUNDLE_ID" --platform IOS || true)
+          fi
+          if [ -z "$LATEST" ] || [ "$LATEST" = "None" ]; then
+            LATEST=0
+          fi
+          if [ "${BUILD_NUMBER:-0}" -gt "$LATEST" ]; then
+            NEW="$BUILD_NUMBER"
+          else
+            NEW=$((LATEST + 1))
+          fi
+          echo "Using CFBundleVersion $NEW"
+          agvtool new-version -all "$NEW"
+      - name: Resolve Swift packages
+        script: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME"
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - $CM_COMMIT_AUTHOR_EMAIL
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
