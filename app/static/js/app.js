@@ -25,17 +25,37 @@ async function api(path, opts = {}) {
 }
 
 function toast(msg, isErr) {
-  let el = $(".toast");
+  let el = $("#toast");
   if (!el) {
     el = document.createElement("div");
     el.id = "toast";
     el.style.cssText = "position:fixed;bottom:18px;right:18px;padding:10px 14px;border-radius:10px;background:#222;z-index:9";
     document.body.appendChild(el);
   }
-  el.textContent = msg;
+  el.textContent = isAlpacaKeyError(msg)
+    ? "Alpaca rejected the API keys. Open Account and paste a new Paper key (PK…) and secret."
+    : msg;
   el.style.color = isErr ? "#ff3b30" : "#ffd400";
   clearTimeout(el._t);
   el._t = setTimeout(() => (el.textContent = ""), 4000);
+}
+
+function isAlpacaKeyError(err) {
+  const s = String(err || "").toLowerCase();
+  return s.includes("rejected the saved api") || s.includes("unauthorized") || /\b401\b/.test(s);
+}
+
+function showAlpacaError(mount, err) {
+  const keyFail = isAlpacaKeyError(err);
+  mount.innerHTML = `
+    <div class="empty-desk">
+      <h1>${keyFail ? "Alpaca keys need a refresh" : "Alpaca did not load"}</h1>
+      <p>${keyFail
+        ? "Alpaca rejected the keys saved in Cove. That usually means they were rotated, or Paper/Live does not match the key. This is not an Apple or Cove login error."
+        : (err || "Could not reach Alpaca.")}</p>
+      <p>On a computer open <b>app.alpaca.markets</b>, switch to <b>Paper</b>, open API Keys, then paste a key that starts with <b>PK</b> and its secret in Account.</p>
+      <a class="btn primary" href="/account">Open Account</a>
+    </div>`;
 }
 
 const CHART_TFS = [
@@ -248,7 +268,13 @@ async function boot() {
     return;
   }
   const me = await api("/api/me");
-  if (!me.ok) return;
+  if (!me.ok) {
+    const root = document.getElementById("view");
+    if (root) {
+      root.innerHTML = `<div class="notice">${me.error || "Sign in required."} <a href="/login">Sign in</a></div>`;
+    }
+    return;
+  }
   window.COVE = me;
   startAlertWatch();
   if (page === "home") return home(me);
@@ -302,7 +328,7 @@ async function home(me) {
   const root = $("#view");
   if (needLink(me.connection, root)) return;
   const snap = await api("/api/snapshot");
-  if (!snap.ok) return (root.innerHTML = `<div class="notice">${snap.error}</div>`);
+  if (!snap.ok) return showAlpacaError(root, snap.error);
   const hist = await api("/api/history?period=1M");
   const a = snap.account;
   root.innerHTML = `
@@ -1130,7 +1156,7 @@ async function calendar(me) {
   const now = new Date();
   async function show(y, m) {
     const data = await api(`/api/calendar/pnl?year=${y}&month=${m}`);
-    if (!data.ok) return (root.innerHTML = `<div class="notice">${data.error}</div>`);
+    if (!data.ok) return showAlpacaError(root, data.error);
     root.innerHTML = `
       <div class="row"><h1 class="page">${data.label}</h1>
         <div class="seg"><button class="btn" id="prev">Prev</button><button class="btn" id="next">Next</button></div></div>
@@ -1150,7 +1176,7 @@ async function dividends(me) {
   const now = new Date();
   async function show(y, m) {
     const data = await api(`/api/calendar/dividends?year=${y}&month=${m}`);
-    if (!data.ok) return (root.innerHTML = `<div class="notice">${data.error}</div>`);
+    if (!data.ok) return showAlpacaError(root, data.error);
     root.innerHTML = `
       <div class="row"><h1 class="page">Dividend calendar · ${data.label}</h1>
         <div class="seg"><button class="btn" id="prev">Prev</button><button class="btn" id="next">Next</button></div></div>
@@ -1173,6 +1199,8 @@ async function activity(me) {
   const root = $("#view");
   if (needLink(me.connection, root)) return;
   const [orders, acts] = await Promise.all([api("/api/orders"), api("/api/activities")]);
+  if (!orders.ok) return showAlpacaError(root, orders.error);
+  if (!acts.ok) return showAlpacaError(root, acts.error);
   root.innerHTML = `
     <h1 class="page">Activity</h1>
     <h3>Orders</h3>
@@ -1245,6 +1273,7 @@ async function account(me) {
     <div class="card">
       <h3>Link Alpaca</h3>
       <p class="muted">Alpaca Cove is only an interface for Alpaca users. Keys stay encrypted on this server. Every trade you send is executed by Alpaca, not by us.</p>
+      <p class="muted">Use <b>Paper</b> keys from app.alpaca.markets. The key ID must start with <b>PK</b>. If you see “unauthorized”, generate a new pair and paste both fields again. Live keys start with AK and only work with Paper unchecked.</p>
       ${me.oauth_configured ? `<p><a class="btn" href="/connect/alpaca?env=paper">Connect paper via OAuth</a>
         <a class="btn" href="/connect/alpaca?env=live">Connect live via OAuth</a></p>` : `<p class="muted">Add ALPACA_OAUTH_CLIENT_ID to enable one-click Connect.</p>`}
       <label>API key</label><input id="k">

@@ -64,18 +64,29 @@ def _token_hash(token: str) -> str:
 
 
 def create_reset_token(db: Session, user: User) -> str:
-    token = secrets.token_urlsafe(32)
-    row = PasswordReset(
-        user_id=user.id,
-        token_hash=_token_hash(token),
-        expires_at=utcnow() + timedelta(hours=1),
-    )
-    db.add(row)
+    db.query(PasswordReset).filter(PasswordReset.expires_at < utcnow()).delete(synchronize_session=False)
+    db.query(PasswordReset).filter(
+        PasswordReset.user_id == user.id, PasswordReset.used_at.is_(None)
+    ).delete(synchronize_session=False)
     db.commit()
-    return token
+    for _ in range(8):
+        token = f"{secrets.randbelow(900000) + 100000}"
+        taken = db.query(PasswordReset).filter(PasswordReset.token_hash == _token_hash(token)).first()
+        if taken:
+            continue
+        row = PasswordReset(
+            user_id=user.id,
+            token_hash=_token_hash(token),
+            expires_at=utcnow() + timedelta(hours=1),
+        )
+        db.add(row)
+        db.commit()
+        return token
+    raise RuntimeError("Could not create a reset code")
 
 
 def user_for_reset_token(db: Session, token: str) -> User | None:
+    token = (token or "").strip()
     if not token:
         return None
     row = db.query(PasswordReset).filter(PasswordReset.token_hash == _token_hash(token)).first()

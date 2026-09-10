@@ -28,8 +28,8 @@
       </h1>
       {% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
       {% if reset_link %}
-        <p class="muted">Open this link:</p>
-        <p><a href="{{ reset_link }}">{{ reset_link }}</a></p>
+        <p class="muted">Set the new password in this app:</p>
+        <p><a href="{{ reset_link }}">Continue in Alpaca Cove</a></p>
       {% endif %}
 
       {% if mode == "login" %}
@@ -54,12 +54,25 @@
       <p class="muted">Already here? <a href="/login">Sign in</a>. {{ trial_days }} days free.</p>
 
       {% elif mode == "forgot" %}
-      <p class="muted">Enter the email you use for Alpaca Cove. We will send a reset link. This does not change your Alpaca login.</p>
+      <p class="muted">Enter the email you use for Alpaca Cove. We email a 6-digit code. Type it here in this app. This does not change your Alpaca login.</p>
       <form method="post" action="/forgot">
         <label>Email</label>
         <input type="email" name="email" required autocomplete="email" />
-        <p><button class="btn primary" type="submit" style="margin-top:16px">Send reset link</button></p>
+        <p><button class="btn primary" type="submit" style="margin-top:16px">Send code</button></p>
       </form>
+      {% if show_code %}
+      <hr style="border:0;border-top:1px solid #2a2718;margin:22px 0" />
+      <p class="muted">Enter the code from the email, then choose a new password. Stay in this app. Do not open Safari.</p>
+      <form method="post" action="/reset">
+        <label>6-digit code</label>
+        <input name="token" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" required />
+        <label>New password</label>
+        <input type="password" name="password" required minlength="8" autocomplete="new-password" />
+        <label>Type it again</label>
+        <input type="password" name="password2" required minlength="8" autocomplete="new-password" />
+        <p><button class="btn primary" type="submit" style="margin-top:16px">Save password and sign in</button></p>
+      </form>
+      {% endif %}
       <p class="muted"><a href="/login">Back to sign in</a></p>
 
       {% else %}

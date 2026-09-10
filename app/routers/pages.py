@@ -18,7 +18,7 @@ from app.auth import (
     user_for_reset_token,
     verify_password,
 )
-from app.config import APP_NAME, APP_URL, APP_VERSION, COMPANY_NAME, FEEDBACK_TO, PUBLIC_SITE_URL, ROOT, STRIPE_PRICE_AMOUNT, STRIPE_PRICE_LIFETIME_CENTS, TRIAL_DAYS
+from app.config import APP_NAME, APP_VERSION, COMPANY_NAME, FEEDBACK_TO, PUBLIC_SITE_URL, ROOT, STRIPE_PRICE_AMOUNT, STRIPE_PRICE_LIFETIME_CENTS, TRIAL_DAYS
 from app.db import get_db
 from app.entitlements import connection_payload, entitlement_state
 from app.models import User
@@ -129,7 +129,10 @@ def signup_post(
 def forgot_form(request: Request, db: Session = Depends(get_db)):
     if current_user(request, db):
         return RedirectResponse("/home", status_code=302)
-    return templates.TemplateResponse(request, "auth.html", ctx(request, db, mode="forgot", page="forgot"))
+    show_code = bool(request.session.get("reset_code_sent"))
+    return templates.TemplateResponse(
+        request, "auth.html", ctx(request, db, mode="forgot", page="forgot", show_code=show_code)
+    )
 
 
 @router.post("/forgot")
@@ -140,34 +143,38 @@ def forgot_post(
 ):
     email_n = email.lower().strip()
     user = db.scalar(select(User).where(User.email == email_n))
-    host = (request.url.hostname or "").lower()
-    local = host in {"127.0.0.1", "localhost"}
+    request.session["reset_code_sent"] = True
     if user:
-        token = create_reset_token(db, user)
-        reset_url = f"{APP_URL}/reset?token={token}"
+        code = create_reset_token(db, user)
         body = (
-            "You asked to reset your Alpaca Cove password.\n\n"
-            "Open this link. It works for one hour:\n"
-            f"{reset_url}\n\n"
+            f"Your Alpaca Cove code is {code}\n\n"
+            "Stay in the Alpaca Cove app (not Safari). On the forgot-password screen, "
+            "type this 6-digit code and choose a new password. It lasts one hour.\n\n"
+            "Do not tap any link in this email on iPhone. Links open Safari and leave the app.\n\n"
             "If you did not ask for this, ignore the email.\n"
         )
-        ok, _err = send_mail(user.email, "Reset your Alpaca Cove password", body)
+        ok, _err = send_mail(user.email, f"Your Alpaca Cove code is {code}", body)
         backup = (FEEDBACK_TO or "").strip()
         if not ok and backup and backup.lower() != email_n:
             ok, _err = send_mail(
                 backup,
-                "Reset your Alpaca Cove password",
+                f"Your Alpaca Cove code is {code}",
                 f"This reset is for the Cove login {email_n}.\n\n{body}",
             )
         if ok:
-            request.session["flash"] = "Check your email for a reset link. Look in junk if you do not see it."
-        elif local:
-            request.session["flash"] = "The reset email did not send. Use the link below on this computer. It lasts one hour."
-            request.session["reset_link"] = reset_url
+            request.session["flash"] = (
+                "We sent a 6-digit code. Enter it below in this app. Check junk mail. "
+                "Do not open email links on iPhone — they leave the app."
+            )
         else:
-            request.session["flash"] = "If that email is on an account, we sent a reset link. Check inbox and junk."
+            request.session["flash"] = (
+                "Email did not send. If you can see a code in a backup inbox, enter it below. "
+                "Otherwise try again in a minute."
+            )
     else:
-        request.session["flash"] = "If that email is on an account, we sent a reset link. Check inbox and junk."
+        request.session["flash"] = (
+            "If that email is on an account, we sent a 6-digit code. Enter it below in this app."
+        )
     return RedirectResponse("/forgot", status_code=303)
 
 
@@ -204,6 +211,7 @@ def reset_post(
     set_password(user, password)
     db.commit()
     login_user(request, user)
+    request.session.pop("reset_code_sent", None)
     request.session["flash"] = "Password updated. You are signed in."
     return RedirectResponse("/home", status_code=303)
 

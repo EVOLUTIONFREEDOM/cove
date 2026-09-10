@@ -43,8 +43,22 @@ def _conn(user: User) -> Connection:
     return user.connection
 
 
+def _alpaca_user_error(exc: AlpacaError) -> str:
+    raw = str(exc)
+    if exc.status == 401 or "unauthorized" in raw.lower():
+        return (
+            "Alpaca rejected the saved API keys. Open Account and paste a new Paper key "
+            "(it starts with PK) and the matching secret."
+        )
+    return raw
+
+
 def err(exc: AlpacaError) -> JSONResponse:
-    return JSONResponse({"ok": False, "error": str(exc)}, status_code=min(exc.status, 499) if exc.status >= 400 else 400)
+    status = 400 if exc.status == 401 else (min(exc.status, 499) if exc.status >= 400 else 400)
+    return JSONResponse(
+        {"ok": False, "error": _alpaca_user_error(exc), "alpaca_status": exc.status},
+        status_code=status,
+    )
 
 
 @router.get("/api/me")
