@@ -44,6 +44,11 @@ app.include_router(pages.router)
 app.include_router(api.router)
 
 
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+
 @app.middleware("http")
 async def cache_headers(request, call_next):
     response = await call_next(request)

@@ -1,0 +1,7 @@
+.venv
+data
+mobile
+tools
+.git
+.env
+*.db

@@ -10,6 +10,8 @@
     "allowNavigation": [
       "supporters-rejected-ricky-leader.trycloudflare.com",
       "*.trycloudflare.com",
+      "*.fly.dev",
+      "*.onrender.com",
       "evolutionfreedomltd.co.uk",
       "*.evolutionfreedomltd.co.uk"
     ]
@@ -21,12 +23,14 @@
       "showSpinner": false
     },
     "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#000000"
+      "style": "LIGHT",
+      "backgroundColor": "#000000",
+      "overlaysWebView": false
     }
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "backgroundColor": "#000000"
   },
   "ios": {
     "contentInset": "never",

@@ -1,0 +1,38 @@
+# Hosted trading desk for TestFlight (public link testers).
+# After: fly auth login → fly apps create alpaca-cove-desk → fly volumes create cove_data --size 1
+#        fly secrets set APP_SECRET=... APP_URL=https://alpaca-cove-desk.fly.dev
+#        fly deploy
+
+app = "alpaca-cove-desk"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  HOST = "0.0.0.0"
+  PORT = "8787"
+  APP_NAME = "Alpaca Cove"
+  COMPANY_NAME = "Evolution Freedom LTD"
+  PUBLIC_SITE_URL = "https://www.evolutionfreedomltd.co.uk"
+  SHARE_URL = "https://www.evolutionfreedomltd.co.uk"
+  FEEDBACK_TO = "evolutioninvestments79@gmail.com"
+  DATABASE_URL = "sqlite:////data/cove.db"
+  APP_VERSION = "1.0.1"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[mounts]
+  source = "cove_data"
+  destination = "/data"

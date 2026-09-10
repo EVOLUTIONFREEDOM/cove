@@ -1,9 +1,10 @@
-# Cove iPhone → TestFlight. Start this workflow from the Codemagic UI.
+# Cove iPhone → TestFlight (external group + public link).
 # Secrets go in Codemagic Environment variables, group "code-signing":
 #   CERTIFICATE_PRIVATE_KEY
 #   APP_STORE_CONNECT_ISSUER_ID
 #   APP_STORE_CONNECT_KEY_IDENTIFIER
 #   APP_STORE_CONNECT_PRIVATE_KEY
+#   COVE_SERVER_URL   (https hosted desk, never trycloudflare)
 
 workflows:
   ios-testflight:
@@ -20,6 +21,13 @@ workflows:
       node: 22
       xcode: latest
     scripts:
+      - name: Point WebView at hosted desk
+        script: |
+          if [ -z "$COVE_SERVER_URL" ]; then
+            echo "Add COVE_SERVER_URL to the code-signing group. Example: https://alpaca-cove-desk.fly.dev"
+            exit 1
+          fi
+          python3 "$CM_BUILD_DIR/scripts/point_ios_server.py" "$COVE_SERVER_URL"
       - name: Install JS deps
         script: |
           cd mobile
@@ -56,6 +64,7 @@ workflows:
           fi
           echo "Using CFBundleVersion $NEW"
           agvtool new-version -all "$NEW"
+          agvtool new-marketing-version 1.0.1
       - name: Resolve Swift packages
         script: |
           xcodebuild -resolvePackageDependencies \
@@ -75,4 +84,7 @@ workflows:
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
+        expire_build_submitted_for_review: true
+        beta_groups:
+          - testers 1
         submit_to_app_store: false

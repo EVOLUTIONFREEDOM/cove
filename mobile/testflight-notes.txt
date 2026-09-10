@@ -1,0 +1,13 @@
+What to test
+Alpaca Cove is an interface for an Alpaca account you already have. We are not a broker and never hold cash or shares.
+
+1. Create a Cove login (email + password) inside the app.
+2. Open More → Account. Paste Paper API keys from app.alpaca.markets (key starts with PK). Leave Paper checked. Save keys.
+3. Confirm Home shows paper equity, then switch tabs with the bottom bar or a left/right swipe.
+4. Open Trade, load a symbol, and place a small paper order if you want. It executes at Alpaca, not at Evolution Freedom LTD.
+5. Forgot password: stay in the app and enter the 6-digit email code. Do not open Safari.
+
+Privacy: https://YOUR-HOSTED-DESK/privacy
+Terms: https://YOUR-HOSTED-DESK/terms
+Delete account: https://YOUR-HOSTED-DESK/delete-account
+Support: evolutioninvestments79@gmail.com

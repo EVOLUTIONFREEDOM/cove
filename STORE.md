@@ -2,7 +2,93 @@
 
 Cove’s native shells live in `mobile/`. They are Capacitor apps that open your hosted Cove website (the FastAPI app). **This computer is Windows**, so Android can be built here. **Apple does not allow compiling an iPhone app on Windows.** You do **not** need to buy a Mac, and you do **not** need Flutter. Rent a Mac in the cloud (Codemagic) and install the result on your iPhone with **TestFlight**.
 
-Bundle ID / application id: `com.cove.trade`
+Bundle ID / application id: `com.cove.trade`  
+App Store Connect Apple ID: `6810722839`
+
+---
+
+## Public TestFlight link (outside testers)
+
+A public link (`https://testflight.apple.com/join/…`) only works after **all** of these are true:
+
+1. The trading desk is on a **stable HTTPS host** (not this PC’s Cloudflare tunnel).
+2. Codemagic env `COVE_SERVER_URL` is that HTTPS URL.
+3. Test information is filled in App Store Connect.
+4. A **non–internal-only** IPA is uploaded and **Beta App Review** approves it.
+5. That build is on an **external** group, then you turn on **Public Link**.
+
+Do the steps in this order. Do not start Codemagic until step 3 is saved.
+
+### 1. Host the desk (Fly.io)
+
+This PC is not a server. If the tunnel stops, every public-link tester sees a dead app, and Apple rejects Beta Review.
+
+1. Open [https://fly.io/app/sign-up](https://fly.io/app/sign-up) and create a free account (GitHub login is fine).
+2. Add a payment card if Fly asks (needed for an always-on machine).
+3. On this PC, PowerShell:
+
+```powershell
+iwr https://fly.io/install.ps1 -useb | iex
+cd C:\Users\User\Desktop\cove
+fly auth login
+fly apps create alpaca-cove-desk
+fly volumes create cove_data --region lhr --size 1 -y
+fly secrets set APP_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')" APP_URL=https://alpaca-cove-desk.fly.dev
+fly deploy
+```
+
+4. In a browser open `https://alpaca-cove-desk.fly.dev/health` — you should see `{"ok":true}`.
+5. Open `/privacy` and `/terms` on that same host. Apple will load those URLs.
+
+If the app name `alpaca-cove-desk` is taken, create another name and use that hostname everywhere below.
+
+### 2. Test information (required before a public link)
+
+1. Open [Test information](https://appstoreconnect.apple.com/apps/6810722839/testflight/test-info).
+2. Fill **every** required field, then Save:
+
+- **Beta App Description:** Alpaca Cove is an iPhone desk for people who already have Alpaca. We are not a broker. Paper trading uses keys that start with PK.
+- **Feedback Email:** `evolutioninvestments79@gmail.com`
+- **First Name:** your legal first name
+- **Last Name:** your legal last name
+- **Phone:** a number Apple can call
+- **Email:** `steven@evolutionfreedomltd.co.uk` (or the Active Apple ID email)
+- **Privacy Policy URL:** `https://alpaca-cove-desk.fly.dev/privacy` (your real host)
+- **What to Test:** paste `mobile/testflight-notes.txt` (replace YOUR-HOSTED-DESK with the Fly URL)
+
+Without this page complete, Codemagic post-processing fails and the public link never appears.
+
+### 3. Codemagic variable
+
+1. Open Codemagic → app **cove** → **Environment variables**.
+2. Add `COVE_SERVER_URL`
+3. Value: `https://alpaca-cove-desk.fly.dev` (no trailing slash)
+4. Group: **`code-signing`**
+5. You can leave Secret off so you can see it.
+6. Save.
+
+### 4. Start the iPhone build
+
+1. Codemagic → **cove** → branch **main**.
+2. **Start new build** → workflow **Cove iPhone (TestFlight)**.
+3. Wait until the IPA uploads. Post-processing then submits it to group **`testers 1`** for **Beta App Review**.
+4. Watch [TestFlight iOS](https://appstoreconnect.apple.com/apps/6810722839/testflight/ios). Status should become **Waiting for Review**, then **Ready to Test**. That can take a few hours or a day.
+
+The workflow **refuses** to build if `COVE_SERVER_URL` is missing or still a trycloudflare tunnel.
+
+### 5. Turn on the public link
+
+1. Open [TestFlight iOS](https://appstoreconnect.apple.com/apps/6810722839/testflight/ios).
+2. Left sidebar, under **External Testing**, click **`testers 1`**.
+3. Confirm the new **1.0.1** build is listed (not an old build marked Internal).
+4. Under testers, click **Create Public Link** (or **Enable Public Link**).
+5. Choose **Open to Anyone**.
+6. Optional: set a tester limit (for example 100).
+7. Confirm. Copy `https://testflight.apple.com/join/…`
+
+Testers: install **TestFlight** from the App Store, tap your link, then **Accept** → **Install**.
+
+If the group still says **No builds available**, the IPA is Internal Only or Beta Review has not approved it yet. Do not share the link until the build on that group is **Testing**.
 
 ---
 
