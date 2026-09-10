@@ -45,9 +45,11 @@ app.include_router(api.router)
 
 
 @app.middleware("http")
-async def disable_stale_shell_cache(request, call_next):
+async def cache_headers(request, call_next):
     response = await call_next(request)
     path = request.url.path
-    if path.startswith("/static/css") or path.startswith("/static/js") or not path.startswith("/static"):
+    if path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=86400"
+    elif not path.startswith("/api/"):
         response.headers["Cache-Control"] = "no-store, max-age=0"
     return response

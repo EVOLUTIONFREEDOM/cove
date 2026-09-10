@@ -7,7 +7,9 @@
   <link rel="icon" href="/static/img/alpaca-cove-icon.png" />
   <link rel="apple-touch-icon" href="/static/img/alpaca-cove-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet" /></noscript>
   <script>
     (function () {
       var ua = navigator.userAgent || "";
@@ -16,20 +18,34 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}-nav4" />
+  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}-nav5" />
   <style>
+    html.is-phone { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     html.is-phone, html.is-phone body[data-page] { height:100%; padding:0 !important; overflow:hidden; }
     html.is-phone body[data-page] { position:fixed; inset:0; width:100%; }
     html.is-phone .app { display:flex !important; flex-direction:column !important; height:100% !important; min-height:0 !important; overflow:hidden !important; }
     html.is-phone .main { order:1; flex:1 1 0% !important; min-height:0 !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch; }
-    html.is-phone .side { order:2; position:relative !important; left:auto !important; right:auto !important; bottom:auto !important; display:flex !important; flex-direction:row !important; flex:0 0 auto !important; width:100% !important; overflow-x:auto !important; overflow-y:hidden !important; border-right:0 !important; border-top:1px solid rgba(255,212,0,.4) !important; background:#070705 !important; padding:6px 4px max(8px, env(safe-area-inset-bottom, 0px)) !important; }
+    html.is-phone .side {
+      order:2; position:relative !important; left:auto !important; right:auto !important; bottom:auto !important;
+      display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; flex:0 0 auto !important;
+      width:100% !important; overflow-x:scroll !important; overflow-y:hidden !important;
+      -webkit-overflow-scrolling:touch; touch-action:pan-x;
+      border-right:0 !important; border-top:1px solid rgba(255,212,0,.4) !important; background:#070705 !important;
+      padding:10px 10px max(16px, env(safe-area-inset-bottom, 0px)) !important; gap:8px !important;
+      scrollbar-width:none;
+    }
+    html.is-phone .side::-webkit-scrollbar { display:none; }
     html.is-phone .side .brand, html.is-phone .side .side-foot, html.is-phone .side .mark { display:none !important; }
     html.is-phone .phone-bar { display:flex !important; }
     html.is-phone .nav-full { display:none !important; }
     html.is-phone .nav-short { display:inline !important; }
     html.is-phone .nav-desk { display:none !important; }
     html.is-phone .side a.nav-more { display:flex !important; }
-    html.is-phone .side a { flex:1 0 auto; min-width:52px; min-height:44px; display:flex; align-items:center; justify-content:center; }
+    html.is-phone .side a {
+      flex:0 0 auto !important; min-width:78px !important; min-height:72px !important;
+      padding:14px 12px !important; font-size:13px !important; font-weight:600;
+      display:flex; align-items:center; justify-content:center; white-space:nowrap;
+    }
   </style>
 </head>
 <body data-page="{{ page }}">
@@ -61,7 +77,7 @@
         (terms_url,"Read me","Help","readme","nav-desk","_blank","noopener"),
       ] %}
       {% for href, label, short, key, extra_class, target, rel in links %}
-        <a href="{{ href }}" class="{{ extra_class }} {{ 'active' if page == key or (key == 'more' and page in extra_keys) else '' }}"{% if target %} target="{{ target }}" rel="{{ rel }}"{% endif %}>
+        <a href="{{ href }}" data-nav="{{ key }}" class="{{ extra_class }} {{ 'active' if page == key or (key == 'more' and page in extra_keys) else '' }}"{% if target %} target="{{ target }}" rel="{{ rel }}"{% endif %}>
           <span class="nav-full">{{ label }}</span>
           <span class="nav-short">{{ short }}</span>
           {% if key == "alerts" and unread %}<span class="badge">{{ unread }}</span>{% endif %}
@@ -98,6 +114,6 @@
     </main>
   </div>
   <script src="/static/js/lightweight-charts.js"></script>
-  <script src="/static/js/app.js?v={{ app_version }}-nav4"></script>
+  <script src="/static/js/app.js?v={{ app_version }}-nav5"></script>
 </body>
 </html>

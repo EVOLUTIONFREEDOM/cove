@@ -12,8 +12,18 @@ const UP = "#22c55e";
 const DOWN = "#ff3b30";
 
 async function api(path, opts = {}) {
+  const method = (opts.method || "GET").toUpperCase();
+  const key = method + " " + path;
+  if (method === "GET") {
+    const hit = apiCache.get(key);
+    if (hit && Date.now() - hit.at < 10000) return hit.data;
+  } else {
+    apiCache.clear();
+    meCache = { at: 0, data: null };
+  }
   const res = await fetch(path, {
     headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+    credentials: "same-origin",
     ...opts,
   });
   const data = await res.json().catch(() => ({ ok: false, error: res.statusText }));
@@ -21,7 +31,163 @@ async function api(path, opts = {}) {
     const detail = data.detail;
     data.error = typeof detail === "string" ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg || d).join(" ") : res.statusText);
   }
+  if (method === "GET" && res.ok && data.ok !== false) apiCache.set(key, { at: Date.now(), data });
   return data;
+}
+
+const apiCache = new Map();
+let meCache = { at: 0, data: null };
+let bootGen = 0;
+const TAB_ORDER = ["home", "trade", "watchlist", "options", "calendar", "dividends", "activity", "alerts", "more"];
+const PAGE_PATHS = {
+  home: "/home",
+  trade: "/trade",
+  watchlist: "/watchlist",
+  options: "/options",
+  calendar: "/calendar",
+  dividends: "/dividends",
+  activity: "/activity",
+  alerts: "/alerts",
+  more: "/more",
+  account: "/account",
+  upgrade: "/upgrade",
+  share: "/share",
+  feedback: "/feedback",
+  readme: "/readme",
+};
+const EXTRA_PAGES = ["account", "upgrade", "share", "feedback"];
+
+function pathToPage(pathname) {
+  const p = (pathname || "/").replace(/\/$/, "") || "/home";
+  for (const [name, path] of Object.entries(PAGE_PATHS)) {
+    if (path === p) return name;
+  }
+  return "";
+}
+
+function destroyCharts() {
+  (window._coveCharts || []).forEach((c) => {
+    try { c.destroy(); } catch {}
+  });
+  window._coveCharts = [];
+}
+
+function setActiveNav(page) {
+  document.body.dataset.page = page;
+  $$(".side a[data-nav]").forEach((a) => {
+    const key = a.dataset.nav;
+    const on = key === page || (key === "more" && EXTRA_PAGES.includes(page));
+    a.classList.toggle("active", on);
+  });
+  const active = document.querySelector(".side a.active");
+  try {
+    active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  } catch {}
+}
+
+async function getMe() {
+  if (meCache.data && Date.now() - meCache.at < 20000) return meCache.data;
+  const me = await api("/api/me");
+  if (me.ok) meCache = { at: Date.now(), data: me };
+  return me;
+}
+
+async function showPage(page, opts = {}) {
+  if (!page) return;
+  const url = opts.url || PAGE_PATHS[page] || ("/" + page);
+  if (!opts.skipHistory) {
+    if (opts.replace) history.replaceState({ page }, "", url);
+    else history.pushState({ page }, "", url);
+  }
+  destroyCharts();
+  document.querySelector(".main")?.scrollTo(0, 0);
+  const view = document.getElementById("view");
+  if (view) view.innerHTML = `<p class="muted">Loading…</p>`;
+  setActiveNav(page);
+  const gen = ++bootGen;
+  const me = await getMe();
+  if (gen !== bootGen) return;
+  if (!me.ok) {
+    if (view) view.innerHTML = `<div class="notice">${me.error || "Sign in required."} <a href="/login">Sign in</a></div>`;
+    return;
+  }
+  window.COVE = me;
+  startAlertWatch();
+  const render = {
+    home, trade, watchlist, options, calendar, dividends, activity,
+    alerts, account, upgrade, share, feedback, readme, more,
+  };
+  const fn = render[page];
+  if (fn) return fn(me);
+}
+
+function coveGo(href) {
+  const u = new URL(href, location.href);
+  if (u.origin !== location.origin) {
+    location.href = u.href;
+    return;
+  }
+  const page = pathToPage(u.pathname);
+  if (!page) {
+    location.href = u.pathname + u.search;
+    return;
+  }
+  showPage(page, { url: u.pathname + u.search });
+}
+
+function bindAppShell() {
+  if (window._coveShell) return;
+  window._coveShell = true;
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a[href]");
+    if (!a || a.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const raw = a.getAttribute("href");
+    if (!raw || raw.startsWith("mailto:") || raw.startsWith("tel:")) return;
+    const u = new URL(raw, location.href);
+    if (u.origin !== location.origin) return;
+    const full = ["/login", "/logout", "/signup", "/forgot", "/reset", "/privacy", "/terms", "/delete-account"];
+    if (full.includes(u.pathname) || u.pathname.startsWith("/connect") || u.pathname.startsWith("/auth")) return;
+    if (!pathToPage(u.pathname)) return;
+    e.preventDefault();
+    showPage(pathToPage(u.pathname), { url: u.pathname + u.search });
+  });
+  window.addEventListener("popstate", () => {
+    const page = pathToPage(location.pathname) || document.body.dataset.page || "home";
+    showPage(page, { url: location.pathname + location.search, skipHistory: true });
+  });
+  const main = document.querySelector(".main");
+  if (!main) return;
+  let x0 = 0, y0 = 0, t0 = 0, tracking = false;
+  main.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    const el = e.target;
+    if (el.closest("input, textarea, select, button, a, .chart-wrap, .chart-box, .side")) {
+      tracking = false;
+      return;
+    }
+    x0 = e.touches[0].clientX;
+    y0 = e.touches[0].clientY;
+    t0 = Date.now();
+    tracking = true;
+  }, { passive: true });
+  main.addEventListener("touchend", (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0;
+    const dy = t.clientY - y0;
+    if (Math.abs(dx) < 72 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+    if (Date.now() - t0 > 900) return;
+    const page = document.body.dataset.page;
+    if (EXTRA_PAGES.includes(page)) {
+      if (dx > 0) showPage("more");
+      return;
+    }
+    const idx = TAB_ORDER.indexOf(page);
+    if (idx < 0) return;
+    const next = dx < 0 ? TAB_ORDER[idx + 1] : TAB_ORDER[idx - 1];
+    if (next) showPage(next);
+  }, { passive: true });
 }
 
 function toast(msg, isErr) {
@@ -139,6 +305,8 @@ function PriceChart(host, ohlcEl) {
     this.chart.applyOptions({ width: host.clientWidth, height: host.clientHeight });
   });
   this._ro.observe(host);
+  window._coveCharts = window._coveCharts || [];
+  window._coveCharts.push(this);
 }
 
 PriceChart.prototype.destroy = function () {
@@ -261,36 +429,14 @@ function needLink(connection, mount) {
 }
 
 async function boot() {
-  const page = document.body.dataset.page;
+  bindAppShell();
+  const page = pathToPage(location.pathname) || document.body.dataset.page || "home";
   const needsCharts = ["home", "trade", "watchlist", "options", "calendar"].includes(page);
   if (needsCharts && !window.LightweightCharts) {
     document.getElementById("view").innerHTML = `<div class="notice">Charts did not load. Close the app and open it again.</div>`;
     return;
   }
-  const me = await api("/api/me");
-  if (!me.ok) {
-    const root = document.getElementById("view");
-    if (root) {
-      root.innerHTML = `<div class="notice">${me.error || "Sign in required."} <a href="/login">Sign in</a></div>`;
-    }
-    return;
-  }
-  window.COVE = me;
-  startAlertWatch();
-  if (page === "home") return home(me);
-  if (page === "trade") return trade(me);
-  if (page === "watchlist") return watchlist(me);
-  if (page === "options") return options(me);
-  if (page === "calendar") return calendar(me);
-  if (page === "dividends") return dividends(me);
-  if (page === "activity") return activity(me);
-  if (page === "alerts") return alerts(me);
-  if (page === "account") return account(me);
-  if (page === "upgrade") return upgrade(me);
-  if (page === "share") return share(me);
-  if (page === "feedback") return feedback();
-  if (page === "readme") return readme(me);
-  if (page === "more") return more(me);
+  return showPage(page, { url: location.pathname + location.search, skipHistory: true });
 }
 
 function startAlertWatch() {

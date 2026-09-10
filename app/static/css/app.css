@@ -568,16 +568,19 @@ html.is-phone .side {
   align-items: stretch;
   width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: none;
   border-right: 0;
   border-top: 1px solid rgba(255, 212, 0, 0.4);
-  padding: 6px 4px max(8px, env(safe-area-inset-bottom, 0px));
+  padding: 10px 10px max(16px, env(safe-area-inset-bottom, 0px));
   z-index: 50;
   background: #070705;
-  gap: 2px;
+  gap: 8px;
 }
+html.is-phone .side::-webkit-scrollbar { display: none; }
 html.is-phone .side .mark,
 html.is-phone .side-foot,
 html.is-phone .brand { display: none; }
@@ -593,15 +596,16 @@ html.is-phone .phone-bar {
 }
 html.is-phone .phone-bar .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
 html.is-phone .side a {
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  font-size: 11px;
-  padding: 12px 8px;
-  min-width: 52px;
-  min-height: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 14px 12px;
+  min-width: 78px;
+  min-height: 72px;
 }
 html.is-phone .nav-full { display: none; }
 html.is-phone .nav-short { display: inline; }
@@ -653,16 +657,19 @@ html.is-phone .main {
     align-items: stretch;
     width: 100%;
     max-width: 100%;
-    overflow-x: auto;
+    overflow-x: scroll;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
     border-right: 0;
     border-top: 1px solid rgba(255, 212, 0, 0.4);
-    padding: 6px 4px max(8px, env(safe-area-inset-bottom, 0px));
+    padding: 10px 10px max(16px, env(safe-area-inset-bottom, 0px));
     z-index: 50;
     background: #070705;
-    gap: 2px;
+    gap: 8px;
   }
+  .side::-webkit-scrollbar { display: none; }
   .side .mark, .side-foot, .brand { display: none; }
   .phone-bar {
     display: flex;
@@ -676,15 +683,16 @@ html.is-phone .main {
   }
   .phone-bar .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
   .side a {
-    flex: 1 0 auto;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    font-size: 11px;
-    padding: 12px 8px;
-    min-width: 52px;
-    min-height: 44px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 14px 12px;
+    min-width: 78px;
+    min-height: 72px;
   }
   .nav-full { display: none; }
   .nav-short { display: inline; }
