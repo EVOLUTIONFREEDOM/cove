@@ -18,7 +18,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}-nav5" />
+  <link rel="stylesheet" href="/static/css/app.css?v={{ app_version }}-nav6" />
   <style>
     html.is-phone { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     html.is-phone, html.is-phone body[data-page] { height:100%; padding:0 !important; overflow:hidden; }
@@ -36,7 +36,10 @@
     }
     html.is-phone .side::-webkit-scrollbar { display:none; }
     html.is-phone .side .brand, html.is-phone .side .side-foot, html.is-phone .side .mark { display:none !important; }
-    html.is-phone .phone-bar { display:flex !important; }
+    html.is-phone .phone-bar { display:none !important; }
+    html.is-phone body[data-page="home"] .phone-bar { display:flex !important; }
+    html.is-phone .main { padding-top: max(12px, env(safe-area-inset-top, 0px)) !important; }
+    html.is-phone body[data-page="home"] .main { padding-top: 10px !important; }
     html.is-phone .nav-full { display:none !important; }
     html.is-phone .nav-short { display:inline !important; }
     html.is-phone .nav-desk { display:none !important; }
@@ -114,6 +117,6 @@
     </main>
   </div>
   <script src="/static/js/lightweight-charts.js"></script>
-  <script src="/static/js/app.js?v={{ app_version }}-nav5"></script>
+  <script src="/static/js/app.js?v={{ app_version }}-nav6"></script>
 </body>
 </html>

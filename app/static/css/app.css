@@ -585,7 +585,7 @@ html.is-phone .side .mark,
 html.is-phone .side-foot,
 html.is-phone .brand { display: none; }
 html.is-phone .phone-bar {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 10px;
   padding: calc(4px + env(safe-area-inset-top, 0px)) 2px 14px;
@@ -594,6 +594,7 @@ html.is-phone .phone-bar {
   z-index: 4;
   background: linear-gradient(#000 72%, rgba(0,0,0,0));
 }
+html.is-phone body[data-page="home"] .phone-bar { display: flex; }
 html.is-phone .phone-bar .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
 html.is-phone .side a {
   flex: 0 0 auto;
@@ -619,8 +620,9 @@ html.is-phone .main {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 10px 16px 20px;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 16px 20px;
 }
+html.is-phone body[data-page="home"] .main { padding-top: 10px; }
 @media (max-width: 1100px) {
   html:has(body[data-page]),
   body[data-page] {
@@ -672,7 +674,7 @@ html.is-phone .main {
   .side::-webkit-scrollbar { display: none; }
   .side .mark, .side-foot, .brand { display: none; }
   .phone-bar {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 10px;
     padding: calc(4px + env(safe-area-inset-top, 0px)) 2px 14px;
@@ -681,6 +683,7 @@ html.is-phone .main {
     z-index: 4;
     background: linear-gradient(#000 72%, rgba(0,0,0,0));
   }
+  body[data-page="home"] .phone-bar { display: flex; }
   .phone-bar .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
   .side a {
     flex: 0 0 auto;
@@ -706,8 +709,9 @@ html.is-phone .main {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding: 10px 16px 20px;
+    padding: max(12px, env(safe-area-inset-top, 0px)) 16px 20px;
   }
+  body[data-page="home"] .main { padding-top: 10px; }
   .desk-hero { align-items: flex-start; }
   .desk-hero .brand-mark { width: 64px; height: 64px; }
   .kpi { font-size: 36px; }
