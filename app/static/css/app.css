@@ -531,35 +531,134 @@ canvas { display: block; }
 }
 .order-card select option { background: #111; }
 .list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
-@media (max-width: 900px) {
-  html, body {
+/* Phone / iOS WebView: tab bar stays in document flow so it cannot be
+   clipped. Only the main pane scrolls. */
+html.is-phone,
+html.is-phone body[data-page] {
+  height: 100%;
+  max-height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+html.is-phone body[data-page] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+}
+html.is-phone .app {
+  display: flex !important;
+  flex-direction: column;
+  grid-template-columns: none;
+  grid-template-rows: none;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+html.is-phone .side {
+  order: 2;
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-right: 0;
+  border-top: 1px solid rgba(255, 212, 0, 0.4);
+  padding: 6px 4px max(8px, env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  background: #070705;
+  gap: 2px;
+}
+html.is-phone .side .mark,
+html.is-phone .side-foot,
+html.is-phone .brand { display: none; }
+html.is-phone .phone-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(4px + env(safe-area-inset-top, 0px)) 2px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: linear-gradient(#000 72%, rgba(0,0,0,0));
+}
+html.is-phone .phone-bar .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
+html.is-phone .side a {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 12px 8px;
+  min-width: 52px;
+  min-height: 44px;
+}
+html.is-phone .nav-full { display: none; }
+html.is-phone .nav-short { display: inline; }
+html.is-phone .nav-desk { display: none !important; }
+html.is-phone .side a.nav-more { display: flex !important; }
+html.is-phone .main {
+  order: 1;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 10px 16px 20px;
+}
+@media (max-width: 1100px) {
+  html:has(body[data-page]),
+  body[data-page] {
     height: 100%;
+    max-height: 100%;
     padding: 0;
     overflow: hidden;
   }
-  body[data-page] { height: 100%; overflow: hidden; }
+  body[data-page] {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+  }
   .app {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
+    display: flex !important;
+    flex-direction: column;
+    grid-template-columns: none;
+    grid-template-rows: none;
     height: 100%;
-    min-height: 100%;
+    min-height: 0;
+    max-height: 100%;
     overflow: hidden;
   }
   .side {
     order: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    flex: 0 0 auto;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: space-between;
+    justify-content: flex-start;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     border-right: 0;
-    border-top: 1px solid var(--line);
-    padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    border-top: 1px solid rgba(255, 212, 0, 0.4);
+    padding: 6px 4px max(8px, env(safe-area-inset-bottom, 0px));
     z-index: 50;
     background: #070705;
     gap: 2px;
@@ -583,8 +682,9 @@ canvas { display: block; }
     justify-content: center;
     white-space: nowrap;
     font-size: 11px;
-    padding: 10px 8px;
-    min-width: 44px;
+    padding: 12px 8px;
+    min-width: 52px;
+    min-height: 44px;
   }
   .nav-full { display: none; }
   .nav-short { display: inline; }
@@ -592,9 +692,13 @@ canvas { display: block; }
   .side a.nav-more { display: flex !important; }
   .main {
     order: 1;
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 10px 16px calc(96px + env(safe-area-inset-bottom, 0px));
+    overscroll-behavior: contain;
+    padding: 10px 16px 20px;
   }
   .desk-hero { align-items: flex-start; }
   .desk-hero .brand-mark { width: 64px; height: 64px; }
