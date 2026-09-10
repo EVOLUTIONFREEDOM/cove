@@ -4,8 +4,15 @@
   "webDir": "www",
   "backgroundColor": "#000000",
   "server": {
+    "url": "https://supporters-rejected-ricky-leader.trycloudflare.com",
     "androidScheme": "https",
-    "iosScheme": "https"
+    "iosScheme": "https",
+    "allowNavigation": [
+      "supporters-rejected-ricky-leader.trycloudflare.com",
+      "*.trycloudflare.com",
+      "evolutionfreedomltd.co.uk",
+      "*.evolutionfreedomltd.co.uk"
+    ]
   },
   "plugins": {
     "SplashScreen": {

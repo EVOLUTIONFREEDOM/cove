@@ -3,62 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Cove</title>
+  <title>Alpaca Cove</title>
   <style>
     html, body { margin: 0; height: 100%; background: #000; color: #fff8e1; font-family: -apple-system, "Segoe UI", sans-serif; }
     .boot { min-height: 100%; display: grid; place-items: center; padding: 32px; text-align: center; }
     .mark { letter-spacing: 0.2em; text-transform: uppercase; color: #ffd400; font-size: 12px; }
-    p { color: #9a9178; max-width: 36ch; }
-    input, button { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #2b2b2b; background: #141414; color: inherit; }
-    button { background: #ffd400; color: #000; border-color: #ffd400; }
-    .col { display: grid; gap: 10px; width: min(360px, 100%); }
+    p { color: #9a9178; max-width: 36ch; margin: 12px auto; }
   </style>
 </head>
 <body>
   <div class="boot">
-    <div class="col">
-      <div class="mark">Cove</div>
-      <p id="msg">Opening your trading desk…</p>
-      <form id="form" hidden>
-        <input id="url" placeholder="https://your-cove-host" />
-        <button type="submit">Open</button>
-      </form>
+    <div>
+      <div class="mark">Alpaca Cove</div>
+      <p>Loading your trading desk…</p>
     </div>
   </div>
-  <script>
-    const DEFAULTS = [
-      "http://10.0.2.2:8787",
-      "http://127.0.0.1:8787",
-      "http://localhost:8787"
-    ];
-    async function resolveUrl() {
-      const saved = localStorage.getItem("cove_server");
-      if (saved) return saved;
-      try {
-        const res = await fetch("server.json");
-        const data = await res.json();
-        if (data.url) return data.url;
-      } catch (e) {}
-      return DEFAULTS[0];
-    }
-    function go(url) {
-      location.replace(url);
-    }
-    resolveUrl().then((url) => {
-      fetch(url, { mode: "no-cors" }).then(() => go(url)).catch(() => {
-        document.getElementById("msg").textContent =
-          "Could not reach the Cove server. Enter the HTTPS URL of your hosted app, or the LAN address of this computer.";
-        document.getElementById("form").hidden = false;
-        document.getElementById("url").value = url;
-      });
-      setTimeout(() => go(url), 800);
-    });
-    document.getElementById("form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const url = document.getElementById("url").value.trim();
-      localStorage.setItem("cove_server", url);
-      go(url);
-    });
-  </script>
 </body>
 </html>
